@@ -1,0 +1,9 @@
+Debug/
+Debug/*
+Release/
+Release/*
+_UpgradeReport_Files/
+*.user
+*.ncb
+*.suo
+UpgradeLog.XML
