@@ -226,6 +226,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Drunkard.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DrunkardOwnedStates.cpp"
+				>
+			</File>
+			<File
 				RelativePath="EntityManager.cpp"
 				>
 				<FileConfiguration
@@ -375,6 +383,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Drunkard.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DrunkardOwnedStates.h"
+				>
+			</File>
+			<File
 				RelativePath="EntityManager.h"
 				>
 			</File>
@@ -431,10 +447,6 @@
 				>
 			</File>
 			<File
-				RelativePath="Common\ConsoleUtils.h"
-				>
-			</File>
-			<File
 				RelativePath="Common\Time\CrudeTimer.cpp"
 				>
 				<FileConfiguration
@@ -456,14 +468,6 @@
 			</File>
 			<File
 				RelativePath="Common\Time\CrudeTimer.h"
-				>
-			</File>
-			<File
-				RelativePath="Common\2D\SVector2D.h"
-				>
-			</File>
-			<File
-				RelativePath="Common\utils.h"
 				>
 			</File>
 			<File

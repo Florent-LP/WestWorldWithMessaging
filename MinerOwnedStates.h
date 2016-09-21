@@ -173,6 +173,25 @@ public:
 };
 
 
+//------------------------------------------------------------------------
+class FightForHonor : public State<Miner> {
+	private:
+		FightForHonor(){}
+
+		FightForHonor(const FightForHonor&);
+		FightForHonor& operator=(const FightForHonor&);
+	 
+	public:
+		static FightForHonor* Instance();
+
+		virtual void Enter(Miner* miner);
+		virtual void Execute(Miner* miner);
+		virtual void Exit(Miner* miner);
+
+		virtual bool OnMessage(Miner* agent, const Telegram& msg);
+};
+
+
 
 
 #endif

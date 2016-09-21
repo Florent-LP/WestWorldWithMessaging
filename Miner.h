@@ -54,6 +54,8 @@ protected:
   //the higher the value, the more tired the miner
   int                   m_iFatigue;
 
+  bool					m_bFighting;
+
 public:
 
   Miner(int id):m_Location(shack),
@@ -61,6 +63,7 @@ public:
                           m_iMoneyInBank(0),
                           m_iThirst(0),
                           m_iFatigue(0),
+						  m_bFighting(false),
                           BaseGameEntity(id)
                                
   {
@@ -104,6 +107,13 @@ public:
 
   bool          Thirsty()const; 
   void          BuyAndDrinkAWhiskey(){m_iThirst = 0; m_iMoneyInBank-=2;}
+
+  bool Fighting() const {
+	  return m_bFighting;
+  }
+  void setFighting(bool val) {
+	  m_bFighting = val;
+  }
 
 };
 
