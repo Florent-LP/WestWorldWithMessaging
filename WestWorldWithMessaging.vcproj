@@ -4,6 +4,7 @@
 	Version="9,00"
 	Name="WestWorldWithMessaging"
 	ProjectGUID="{0E2C3421-3A44-486D-8CB3-24DB1BDC5B87}"
+	RootNamespace="WestWorldWithMessaging"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -44,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="Common"
+				AdditionalIncludeDirectories="Common;Common/thread/include/"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -72,6 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Common/thread/pthreadVC2.lib"
 				OutputFile=".\Debug/WestWorldWithMessaging.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -164,6 +166,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Common/thread/pthreadVC2.lib"
 				OutputFile=".\Release/WestWorldWithMessaging.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

@@ -23,6 +23,15 @@ void resizeConsole(void) {
 	MoveWindow(consoleWnd, r.left, r.top, 800, 1024, true);
 }
 
+// For Visual Studio 2008 compatiblity, I added the pthread library
+// to the project since std::thread has been only added in 2011
+#include "pthread.h"
+template<class T>
+void* updateWrapper(void* ptr) {
+	((T*)ptr)->Update();
+	return NULL;
+}
+
 int main()
 {
 	resizeConsole();
@@ -49,17 +58,24 @@ int main()
   EntityMgr->RegisterEntity(Elsa);
   EntityMgr->RegisterEntity(John);
 
+  pthread_t t0, t1, t2;
+
   //run Bob, Elsa and John through a few Update calls
   std::string input = "Y";
   for (int i = 0; input == "Y" || input == "y"; i++)
   { 
-    Bob->Update();
-    Elsa->Update();
-	John->Update();
+	pthread_create(&t0, NULL, updateWrapper<Miner>, Bob);
+	pthread_create(&t1, NULL, updateWrapper<MinersWife>, Elsa);
+	pthread_create(&t2, NULL, updateWrapper<Drunkard>, John);
+
+	pthread_join(t0, NULL);
+	pthread_join(t1, NULL);
+	pthread_join(t2, NULL);
 
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
 	
+	// Do 30 more iterations ?
 	if (i > 0 && i%30 == 0) {
 		SetTextColor(FOREGROUND_BLUE| FOREGROUND_RED | FOREGROUND_GREEN);
 		std::cout << "\nContinue story ? <y/N>" << std::endl;
