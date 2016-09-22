@@ -95,6 +95,8 @@ class SleepTilRested : public State<Drunkard> {
 
 		SleepTilRested(const SleepTilRested&);
 		SleepTilRested& operator=(const SleepTilRested&);
+
+		int m_iSleepDuration;
 		
 	public:
 		static SleepTilRested* Instance();

@@ -41,6 +41,12 @@ bool DrunkardsGlobalState::OnMessage(Drunkard* drunkard, const Telegram& msg) {
 			drunkard->SetRivalSpotted(false);
 			return true;
 		break;
+		case Msg_AcceptFight:
+			cout << "\nMessage handled by " << GetNameOfEntity(drunkard->ID()) << " at time: " << Clock->GetCurrentTime();
+
+			drunkard->GetFSM()->ChangeState(GetInFight::Instance());
+			return true;
+		break;
 	}
 	return false;
 }
@@ -53,12 +59,14 @@ GetDrunk* GetDrunk::Instance() {
 }
 
 void GetDrunk::Enter(Drunkard* drunkard) {
-  cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Time to fill the tank!";
+	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Time to fill the tank!";
 }
 
 void GetDrunk::Execute(Drunkard* drunkard) {
 	drunkard->IncreaseDrunkenness();
 
+	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	switch(RandInt(0,2)) {
 		case 0:
 			cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Orderin' a beer";
@@ -92,37 +100,45 @@ SeekFight* SeekFight::Instance() {
 }
 
 void SeekFight::Enter(Drunkard* drunkard) {  
+	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": I bet I can handle any o' y'all!"; 
+	drunkard->IncreaseFatigue();
 }
 
 void SeekFight::Execute(Drunkard* drunkard) {
-	// 1 in 10 chance of increasing fatigue (when seeking the fight).
-	if ((RandFloat() < 0.1)) {
-		drunkard->IncreaseFatigue();
-	}
+	if (drunkard->Fatigued()) {
+		drunkard->GetFSM()->ChangeState(SleepTilRested::Instance());
 
-	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": C'mon, cowards!";
+	} else if (drunkard->getDrunkenness() == 0) {
+		drunkard->GetFSM()->ChangeState(GetDrunk::Instance());
 
-	if (drunkard->RivalSpotted()) {
-		switch(RandInt(0,2)) {
-			case 0:
-				cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Get out, you'll never be the man your mother is!";
-			break;
-			case 1:
-				cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": If you were twice as smart, you'd still be stupid!";
-			break;
-			case 2:
-				cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Do you have to leave so soon? I was just about to poison the beer.";
-			break;
+	} else {
+		SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Seekin' the fight";
+
+		if (drunkard->RivalSpotted()) {
+			switch(RandInt(0,2)) {
+				case 0:
+					cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Get out, ya'll never be the man your mother is!";
+				break;
+				case 1:
+					cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": If ya were twice as smart, ya'd still be stupid!";
+				break;
+				case 2:
+					cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": D'ya have to leave so soon? Ah was just 'bout to poison the beer.";
+				break;
+			}
+
+			Dispatch->DispatchMessage(
+				SEND_MSG_IMMEDIATELY,
+				drunkard->ID(),
+				ent_Miner_Bob,
+				Msg_Provoke,
+				NO_ADDITIONAL_INFO
+			);
 		}
-
-		Dispatch->DispatchMessage(
-			SEND_MSG_IMMEDIATELY,
-			drunkard->ID(),
-			ent_Miner_Bob,
-			Msg_Provoke,
-			NO_ADDITIONAL_INFO
-		);
+		
+		drunkard->DecreaseDrunkenness();
 	}
 }
 
@@ -130,15 +146,6 @@ void SeekFight::Exit(Drunkard* drunkard) {
 }
 
 bool SeekFight::OnMessage(Drunkard* drunkard, const Telegram& msg) {
-	switch(msg.Msg) {
-		case Msg_AcceptFight: {
-			SetTextColor(BACKGROUND_RED|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
-			cout << "\nMessage handled by " << GetNameOfEntity(drunkard->ID()) << " at time: " << Clock->GetCurrentTime();
-
-			drunkard->GetFSM()->ChangeState(GetInFight::Instance());
-		}
-		return true;
-	}
 	return false;
 }
 
@@ -155,9 +162,14 @@ void GetInFight::Enter(Drunkard* drunkard) {
 }
 
 void GetInFight::Execute(Drunkard* drunkard) {
-	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": *POW*";
+	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": POW!" << " (" << drunkard->getFatigue() << ")";
+
 	drunkard->IncreaseFatigue();
 	if (drunkard->Fatigued()) {
+		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Dammit, I'm done! You win this time!" << " (" << drunkard->getFatigue() << ")";
+		drunkard->GetFSM()->ChangeState(SleepTilRested::Instance());
+
 		Dispatch->DispatchMessage(
 			SEND_MSG_IMMEDIATELY,
 			drunkard->ID(),
@@ -165,8 +177,6 @@ void GetInFight::Execute(Drunkard* drunkard) {
 			Msg_YouWinThisTime,
 			NO_ADDITIONAL_INFO
 		);
-		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Dammit, I'm done! You win this time!";
-		drunkard->GetFSM()->ChangeState(SleepTilRested::Instance()); 
 	}
 }
 
@@ -197,17 +207,21 @@ bool GetInFight::OnMessage(Drunkard* drunkard, const Telegram& msg) {
 //-------------------------------------------------------------------------SleepTilRested
 
 SleepTilRested* SleepTilRested::Instance() {
-  static SleepTilRested instance;
-  return &instance;
+	static SleepTilRested instance;
+	return &instance;
 }
 
 void SleepTilRested::Enter(Drunkard* drunkard) {
-  cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Uh... So much tired";
+	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Uh... So much tired";
+	m_iSleepDuration = drunkard->SleepDuration();
 }
 
 void SleepTilRested::Execute(Drunkard* drunkard) {
-	if (!drunkard->Fatigued()) {
-		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": *THROWS UP* Uh... Got a hangover... Need to heal myself with moar beer!";
+	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+
+	if (drunkard->getFatigue() == m_iSleepDuration) {
+		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Throwing up - Uh... Got a hangover... Need to heal myself with moar beer!";
 		drunkard->GetFSM()->ChangeState(GetDrunk::Instance());
 	} else {
 		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": " << "Burp... ZZZZ... ";

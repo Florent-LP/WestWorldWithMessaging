@@ -22,7 +22,7 @@ template <class entity_type> class State;
 struct Telegram;
 
 const int DrunkardTirednessThreshold = 5;
-const int DrunkennessThreshold = 10;
+const int DrunkennessThreshold = 5;
 
 class Drunkard : public BaseGameEntity {
 	private:
@@ -41,7 +41,7 @@ class Drunkard : public BaseGameEntity {
                           BaseGameEntity(id) {
 			m_pStateMachine = new StateMachine<Drunkard>(this);
 
-			m_pStateMachine->SetCurrentState(GetDrunk::Instance());
+			m_pStateMachine->SetCurrentState(SleepTilRested::Instance());
 
 			m_pStateMachine->SetGlobalState(DrunkardsGlobalState::Instance());
 		}
@@ -65,6 +65,10 @@ class Drunkard : public BaseGameEntity {
 
 		bool Fatigued() const;
 
+		int getFatigue() const {
+			return m_iFatigue;
+		}
+
 		void DecreaseFatigue() {
 			m_iFatigue -= 1;
 		}
@@ -73,10 +77,20 @@ class Drunkard : public BaseGameEntity {
 			m_iFatigue += 1;
 		}
 
+		int SleepDuration() const;
+
 		bool Drunk() const;
+
+		int getDrunkenness() const {
+			return m_iDrunkenness;
+		}
 
 		void ResetDrunkenness() {
 			m_iDrunkenness = 0;
+		}
+
+		void DecreaseDrunkenness() {
+			m_iDrunkenness -= 1;
 		}
 
 		void IncreaseDrunkenness() {

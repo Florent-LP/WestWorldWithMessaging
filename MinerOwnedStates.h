@@ -174,15 +174,15 @@ public:
 
 
 //------------------------------------------------------------------------
-class FightForHonor : public State<Miner> {
+class DefendHonor : public State<Miner> {
 	private:
-		FightForHonor(){}
+		DefendHonor(){}
 
-		FightForHonor(const FightForHonor&);
-		FightForHonor& operator=(const FightForHonor&);
+		DefendHonor(const DefendHonor&);
+		DefendHonor& operator=(const DefendHonor&);
 	 
 	public:
-		static FightForHonor* Instance();
+		static DefendHonor* Instance();
 
 		virtual void Enter(Miner* miner);
 		virtual void Execute(Miner* miner);

@@ -1,5 +1,6 @@
 #include <fstream>
 #include <time.h>
+#include <string>
 
 #include "Locations.h"
 #include "Miner.h"
@@ -13,8 +14,19 @@
 
 std::ofstream os;
 
+// Convenient resizing (Microsoft Windows only)
+#include <windows.h>
+void resizeConsole(void) {
+	HWND consoleWnd = GetConsoleWindow();
+	RECT r;
+	GetWindowRect(consoleWnd, &r);
+	MoveWindow(consoleWnd, r.left, r.top, 800, 1024, true);
+}
+
 int main()
 {
+	resizeConsole();
+
 //define this to send output to a text file (see locations.h)
 #ifdef TEXTOUTPUT
   os.open("output.txt");
@@ -38,7 +50,8 @@ int main()
   EntityMgr->RegisterEntity(John);
 
   //run Bob, Elsa and John through a few Update calls
-  for (int i=0; i<30; ++i)
+  std::string input = "Y";
+  for (int i = 0; input == "Y" || input == "y"; i++)
   { 
     Bob->Update();
     Elsa->Update();
@@ -46,6 +59,12 @@ int main()
 
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
+	
+	if (i > 0 && i%30 == 0) {
+		SetTextColor(FOREGROUND_BLUE| FOREGROUND_RED | FOREGROUND_GREEN);
+		std::cout << "\nContinue story ? <y/N>" << std::endl;
+		std::getline(std::cin, input);
+	}
 
     Sleep(800);
   }
