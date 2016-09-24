@@ -2,8 +2,12 @@ Debug/
 Debug/*
 Release/
 Release/*
+Backup/
+Backup/*
 _UpgradeReport_Files/
 *.user
 *.ncb
 *.suo
+*.opendb
 UpgradeLog.XML
+UpgradeLog.htm

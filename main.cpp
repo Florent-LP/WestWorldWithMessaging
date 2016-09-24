@@ -1,6 +1,7 @@
 #include <fstream>
 #include <time.h>
 #include <string>
+#include <thread>
 
 #include "Locations.h"
 #include "Miner.h"
@@ -53,9 +54,13 @@ int main()
   std::string input = "Y";
   for (int i = 0; input == "Y" || input == "y"; i++)
   { 
-    Bob->Update();
-    Elsa->Update();
-	John->Update();
+    std::thread minerTd(&Miner::Update, Bob);
+    std::thread wifeTd(&MinersWife::Update, Elsa);
+	std::thread drunkTd(&Drunkard::Update, John);
+
+	minerTd.join();
+	wifeTd.join();
+	drunkTd.join();
 
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
