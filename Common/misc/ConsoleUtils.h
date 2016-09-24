@@ -12,6 +12,9 @@
 #include <windows.h>
 #include <conio.h>
 #include <iostream>
+#include "pthread.h"
+
+static pthread_mutex_t consoleMutex = PTHREAD_MUTEX_INITIALIZER;
 
 //default text colors can be found in wincon.h
 inline void SetTextColor(WORD colors)

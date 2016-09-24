@@ -8,6 +8,7 @@
 
 #include <iostream>
 using std::cout;
+#include "pthread.h"
 
 #ifdef TEXTOUTPUT
 #include <fstream>
@@ -26,23 +27,27 @@ void DrunkardsGlobalState::Execute(Drunkard* drunkard) {
 }
 
 bool DrunkardsGlobalState::OnMessage(Drunkard* drunkard, const Telegram& msg) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(BACKGROUND_RED|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
 
 	switch(msg.Msg) {
 		case Msg_RivalSaysHi:
 			cout << "\nMessage handled by " << GetNameOfEntity(drunkard->ID()) << " at time: " << Clock->GetCurrentTime();
+			pthread_mutex_unlock(&consoleMutex);
 
 			drunkard->SetRivalSpotted(true);
 			return true;
 		break;
 		case Msg_RivalSaysBye:
 			cout << "\nMessage handled by " << GetNameOfEntity(drunkard->ID()) << " at time: " << Clock->GetCurrentTime();
+			pthread_mutex_unlock(&consoleMutex);
 
 			drunkard->SetRivalSpotted(false);
 			return true;
 		break;
 		case Msg_AcceptFight:
 			cout << "\nMessage handled by " << GetNameOfEntity(drunkard->ID()) << " at time: " << Clock->GetCurrentTime();
+			pthread_mutex_unlock(&consoleMutex);
 
 			drunkard->GetFSM()->ChangeState(GetInFight::Instance());
 			return true;
@@ -59,13 +64,16 @@ GetDrunk* GetDrunk::Instance() {
 }
 
 void GetDrunk::Enter(Drunkard* drunkard) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Time to fill the tank!";
+	pthread_mutex_unlock(&consoleMutex);
 }
 
 void GetDrunk::Execute(Drunkard* drunkard) {
 	drunkard->IncreaseDrunkenness();
-
+	
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	switch(RandInt(0,2)) {
 		case 0:
@@ -78,6 +86,7 @@ void GetDrunk::Execute(Drunkard* drunkard) {
 			cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Buuurp!";
 		break;
 	}
+	pthread_mutex_unlock(&consoleMutex);
 
 	// 1 in 2 chance of seeking the fight (when drunk).
 	if ((RandFloat() < 0.5) && drunkard->Drunk()) {
@@ -100,8 +109,10 @@ SeekFight* SeekFight::Instance() {
 }
 
 void SeekFight::Enter(Drunkard* drunkard) {  
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": I bet I can handle any o' y'all!"; 
+	pthread_mutex_unlock(&consoleMutex);
 	drunkard->IncreaseFatigue();
 }
 
@@ -113,6 +124,7 @@ void SeekFight::Execute(Drunkard* drunkard) {
 		drunkard->GetFSM()->ChangeState(GetDrunk::Instance());
 
 	} else {
+		pthread_mutex_lock(&consoleMutex);
 		SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Seekin' the fight";
 
@@ -137,6 +149,7 @@ void SeekFight::Execute(Drunkard* drunkard) {
 				NO_ADDITIONAL_INFO
 			);
 		}
+		pthread_mutex_unlock(&consoleMutex);
 		
 		drunkard->DecreaseDrunkenness();
 	}
@@ -157,17 +170,23 @@ GetInFight* GetInFight::Instance() {
 }
 
 void GetInFight::Enter(Drunkard* drunkard) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": O'right, let's settle this, you chuckle head!";
+	pthread_mutex_unlock(&consoleMutex);
 }
 
 void GetInFight::Execute(Drunkard* drunkard) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": POW!" << " (" << drunkard->getFatigue() << ")";
+	pthread_mutex_unlock(&consoleMutex);
 
 	drunkard->IncreaseFatigue();
 	if (drunkard->Fatigued()) {
+		pthread_mutex_lock(&consoleMutex);
 		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Dammit, I'm done! You win this time!" << " (" << drunkard->getFatigue() << ")";
+		pthread_mutex_unlock(&consoleMutex);
 		drunkard->GetFSM()->ChangeState(SleepTilRested::Instance());
 
 		Dispatch->DispatchMessage(
@@ -181,12 +200,15 @@ void GetInFight::Execute(Drunkard* drunkard) {
 }
 
 void GetInFight::Exit(Drunkard* drunkard) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Fight's over!";
+	pthread_mutex_unlock(&consoleMutex);
 }
 
 
 bool GetInFight::OnMessage(Drunkard* drunkard, const Telegram& msg) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(BACKGROUND_RED|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
 
 	switch(msg.Msg) {
@@ -195,12 +217,14 @@ bool GetInFight::OnMessage(Drunkard* drunkard, const Telegram& msg) {
 
 			SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 			cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Ha! Got enough already?!";
+			pthread_mutex_unlock(&consoleMutex);
 
 			drunkard->SetRivalSpotted(false);
 			drunkard->GetFSM()->ChangeState(SeekFight::Instance());               
 		}
 		return true;
 	}
+	pthread_mutex_unlock(&consoleMutex);
 	return false;
 }
 
@@ -212,19 +236,24 @@ SleepTilRested* SleepTilRested::Instance() {
 }
 
 void SleepTilRested::Enter(Drunkard* drunkard) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 	cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Uh... So much tired";
+	pthread_mutex_unlock(&consoleMutex);
 	m_iSleepDuration = drunkard->SleepDuration();
 }
 
 void SleepTilRested::Execute(Drunkard* drunkard) {
+	pthread_mutex_lock(&consoleMutex);
 	SetTextColor(FOREGROUND_BLUE|FOREGROUND_INTENSITY);
 
 	if (drunkard->getFatigue() == m_iSleepDuration) {
 		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": Throwing up - Uh... Got a hangover... Need to heal myself with moar beer!";
+		pthread_mutex_unlock(&consoleMutex);
 		drunkard->GetFSM()->ChangeState(GetDrunk::Instance());
 	} else {
 		cout << "\n" << GetNameOfEntity(drunkard->ID()) << ": " << "Burp... ZZZZ... ";
+		pthread_mutex_unlock(&consoleMutex);
 		drunkard->DecreaseFatigue();
 	} 
 }

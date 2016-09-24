@@ -9,6 +9,7 @@
 
 #include <iostream>
 using std::cout;
+#include "pthread.h"
 
 #ifdef TEXTOUTPUT
 #include <fstream>
@@ -39,6 +40,7 @@ void WifesGlobalState::Execute(MinersWife* wife)
 
 bool WifesGlobalState::OnMessage(MinersWife* wife, const Telegram& msg)
 {
+  pthread_mutex_lock(&consoleMutex);
   SetTextColor(BACKGROUND_RED|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
 
   switch(msg.Msg)
@@ -52,6 +54,7 @@ bool WifesGlobalState::OnMessage(MinersWife* wife, const Telegram& msg)
 
      cout << "\n" << GetNameOfEntity(wife->ID()) << 
           ": Hi honey. Let me make you some of mah fine country stew";
+     pthread_mutex_unlock(&consoleMutex);
 
      wife->GetFSM()->ChangeState(CookStew::Instance());
    }
@@ -59,7 +62,7 @@ bool WifesGlobalState::OnMessage(MinersWife* wife, const Telegram& msg)
    return true;
 
   }//end switch
-
+  pthread_mutex_unlock(&consoleMutex);
   return false;
 }
 
@@ -184,14 +187,17 @@ void CookStew::Execute(MinersWife* wife)
 
 void CookStew::Exit(MinersWife* wife)
 {
+  pthread_mutex_lock(&consoleMutex);
   SetTextColor(FOREGROUND_GREEN|FOREGROUND_INTENSITY);
   
   cout << "\n" << GetNameOfEntity(wife->ID()) << ": Puttin' the stew on the table";
+  pthread_mutex_unlock(&consoleMutex);
 }
 
 
 bool CookStew::OnMessage(MinersWife* wife, const Telegram& msg)
 {
+  pthread_mutex_lock(&consoleMutex);
   SetTextColor(BACKGROUND_RED|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
 
   switch(msg.Msg)
@@ -203,6 +209,7 @@ bool CookStew::OnMessage(MinersWife* wife, const Telegram& msg)
 
       SetTextColor(FOREGROUND_GREEN|FOREGROUND_INTENSITY);
       cout << "\n" << GetNameOfEntity(wife->ID()) << ": StewReady! Lets eat";
+      pthread_mutex_unlock(&consoleMutex);
 
       //let hubby know the stew is ready
       Dispatch->DispatchMessage(SEND_MSG_IMMEDIATELY,
@@ -219,6 +226,6 @@ bool CookStew::OnMessage(MinersWife* wife, const Telegram& msg)
     return true;
 
   }//end switch
-
+  pthread_mutex_unlock(&consoleMutex);
   return false;
 }

@@ -34,7 +34,7 @@ void* updateWrapper(void* ptr) {
 
 int main()
 {
-	resizeConsole();
+  resizeConsole();
 
 //define this to send output to a text file (see locations.h)
 #ifdef TEXTOUTPUT

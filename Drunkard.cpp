@@ -1,7 +1,6 @@
 #include "Drunkard.h"
 
 void Drunkard::Update() {
-  SetTextColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
   m_pStateMachine->Update();
 }
 
