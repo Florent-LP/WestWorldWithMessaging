@@ -15,16 +15,7 @@ void Miner::Update()
 
 
 void Miner::Say(std::string sentence) {
-	consoleMx.lock();
-
-	/*coloredText consoleData;
-	consoleData.colors = FOREGROUND_RED | FOREGROUND_INTENSITY;
-	consoleData.text = sentence;
-	consoleQueue->push(consoleData);*/
-	SetTextColor(FOREGROUND_RED | FOREGROUND_INTENSITY);
-	std::cout << sentence;
-
-	consoleMx.unlock();
+	coutQueue->send(sentence, FOREGROUND_RED | FOREGROUND_INTENSITY);
 }
 
 

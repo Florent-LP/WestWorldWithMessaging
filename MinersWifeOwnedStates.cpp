@@ -76,7 +76,6 @@ void DoHouseWork::Enter(MinersWife* wife)
 
 void DoHouseWork::Execute(MinersWife* wife)
 {
-	consoleMx.lock();
   switch(RandInt(0,2))
   {
   case 0:
@@ -97,7 +96,6 @@ void DoHouseWork::Execute(MinersWife* wife)
 
     break;
   }
-  consoleMx.unlock();
 }
 
 void DoHouseWork::Exit(MinersWife* wife)

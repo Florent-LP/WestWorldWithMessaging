@@ -65,7 +65,7 @@ int main()
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
 
-	//printQueuedText();
+	coutQueue->printAll();
 	
 	if (i > 0 && i%30 == 0) {
 		SetTextColor(FOREGROUND_BLUE| FOREGROUND_RED | FOREGROUND_GREEN);

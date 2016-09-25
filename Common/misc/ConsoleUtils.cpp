@@ -1,14 +1,29 @@
 #include "ConsoleUtils.h"
-/*std::queue<coloredText>* consoleQueue = new std::queue<coloredText>();
 
-void printQueuedText() {
+ConsoleQueue* ConsoleQueue::Instance() {
+	static ConsoleQueue instance;
+	return &instance;
+}
+
+void ConsoleQueue::send(std::string text, WORD color = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN) {
+	m.lock();
+
 	coloredText consoleData;
-	while (!consoleQueue->empty()) {
-		consoleData = consoleQueue->front();
+	consoleData.text = text;
+	consoleData.color = color;
+	q.push(consoleData);
 
-		SetTextColor(consoleData.colors);
+	m.unlock();
+}
+
+void ConsoleQueue::printAll() {
+	coloredText consoleData;
+	while (!q.empty()) {
+		consoleData = q.front();
+
+		SetTextColor(consoleData.color);
 		std::cout << consoleData.text;
 
-		consoleQueue->pop();
+		q.pop();
 	}
-}*/
+}

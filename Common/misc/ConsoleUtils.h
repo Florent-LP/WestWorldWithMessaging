@@ -16,15 +16,28 @@
 #include <queue>
 #include <string>
 
-static std::mutex consoleMx;
 
-/*typedef struct {
-	WORD colors;
+#define coutQueue ConsoleQueue::Instance()
+
+typedef struct {
+	WORD color;
 	std::string text;
 } coloredText;
-//TODO: de-pointer-ize & class-ify
-extern std::queue<coloredText>* consoleQueue;*/
 
+class ConsoleQueue {
+	private:
+		std::mutex m;
+		std::queue<coloredText> q;
+	public:
+		ConsoleQueue() : m(), q() {}
+		~ConsoleQueue() {}
+
+		static ConsoleQueue* Instance();
+
+		void send(std::string, WORD);
+		void printAll();
+
+};
 
 //default text colors can be found in wincon.h
 inline void SetTextColor(WORD colors)

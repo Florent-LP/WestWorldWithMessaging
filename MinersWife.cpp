@@ -13,14 +13,5 @@ void MinersWife::Update()
 
 
 void MinersWife::Say(std::string sentence) {
-	consoleMx.lock();
-
-	/*coloredText consoleData;
-	consoleData.colors = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-	consoleData.text = sentence;
-	consoleQueue->push(consoleData);*/
-	SetTextColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-	std::cout << sentence;
-
-	consoleMx.unlock();
+	coutQueue->send(sentence, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 }

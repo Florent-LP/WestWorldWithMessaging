@@ -25,14 +25,5 @@ void BaseGameEntity::SetID(int val)
 }
 
 void BaseGameEntity::ConsoleLog(std::string message) {
-	consoleMx.lock();
-
-	/*coloredText consoleData;
-	consoleData.colors = BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-	consoleData.text = message;
-	consoleQueue->push(consoleData);*/
-	SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-	std::cout << message;
-
-	consoleMx.unlock();
+	coutQueue->send(message, BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
