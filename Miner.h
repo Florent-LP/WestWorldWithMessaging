@@ -83,6 +83,8 @@ public:
   //so must this
   virtual bool  HandleMessage(const Telegram& msg);
 
+  virtual void Say(std::string sentence);
+
   
   StateMachine<Miner>* GetFSM()const{return m_pStateMachine;}
 

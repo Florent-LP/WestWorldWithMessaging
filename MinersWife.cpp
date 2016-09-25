@@ -8,8 +8,19 @@ bool MinersWife::HandleMessage(const Telegram& msg)
 
 void MinersWife::Update()
 {
-  //set text color to green
-  SetTextColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
- 
   m_pStateMachine->Update();
+}
+
+
+void MinersWife::Say(std::string sentence) {
+	consoleMx.lock();
+
+	/*coloredText consoleData;
+	consoleData.colors = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+	consoleData.text = sentence;
+	consoleQueue->push(consoleData);*/
+	SetTextColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+	std::cout << sentence;
+
+	consoleMx.unlock();
 }

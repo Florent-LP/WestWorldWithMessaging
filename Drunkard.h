@@ -109,5 +109,7 @@ class Drunkard : public BaseGameEntity {
 		void Update();
 
 		virtual bool HandleMessage(const Telegram& msg);
+
+		virtual void Say(std::string sentence);
 };
 #endif

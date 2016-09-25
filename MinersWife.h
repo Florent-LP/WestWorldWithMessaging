@@ -10,6 +10,7 @@
 //
 //------------------------------------------------------------------------
 
+#include <iostream>
 #include <string>
 
 #include "fsm/State.h"
@@ -59,6 +60,8 @@ public:
 
   //so must this
   virtual bool  HandleMessage(const Telegram& msg);
+
+  virtual void Say(std::string sentence);
 
   StateMachine<MinersWife>* GetFSM()const{return m_pStateMachine;}
 

@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BaseGameEntity.cpp" />
+    <ClCompile Include="Common\misc\ConsoleUtils.cpp" />
     <ClCompile Include="Common\Time\CrudeTimer.cpp" />
     <ClCompile Include="Drunkard.cpp" />
     <ClCompile Include="DrunkardOwnedStates.cpp" />

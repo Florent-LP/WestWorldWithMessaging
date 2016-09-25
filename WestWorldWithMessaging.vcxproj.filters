@@ -51,6 +51,9 @@
     <ClCompile Include="Common\Time\CrudeTimer.cpp">
       <Filter>misc</Filter>
     </ClCompile>
+    <ClCompile Include="Common\misc\ConsoleUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseGameEntity.h">

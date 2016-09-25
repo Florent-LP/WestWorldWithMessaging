@@ -1,8 +1,20 @@
 #include "Drunkard.h"
 
 void Drunkard::Update() {
-  SetTextColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
   m_pStateMachine->Update();
+}
+
+void Drunkard::Say(std::string sentence) {
+	consoleMx.lock();
+
+	/*coloredText consoleData;
+	consoleData.colors = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+	consoleData.text = sentence;
+	consoleQueue->push(consoleData);*/
+	SetTextColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+	std::cout << sentence;
+
+	consoleMx.unlock();
 }
 
 bool Drunkard::HandleMessage(const Telegram& msg) {

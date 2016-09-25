@@ -12,6 +12,19 @@
 #include <windows.h>
 #include <conio.h>
 #include <iostream>
+#include <mutex>
+#include <queue>
+#include <string>
+
+static std::mutex consoleMx;
+
+/*typedef struct {
+	WORD colors;
+	std::string text;
+} coloredText;
+//TODO: de-pointer-ize & class-ify
+extern std::queue<coloredText>* consoleQueue;*/
+
 
 //default text colors can be found in wincon.h
 inline void SetTextColor(WORD colors)
@@ -32,6 +45,8 @@ inline void PressAnyKeyToContinue()
 
   return;
 }
+
+//void printQueuedText();
 
 
 #endif
