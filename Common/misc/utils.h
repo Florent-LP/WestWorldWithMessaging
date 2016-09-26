@@ -16,8 +16,9 @@
 #include <limits>
 #include <cassert>
 #include <iomanip>
+#include <random>
 
-
+#define THRAND_MAX (std::uniform_int_distribution<unsigned>().max)()
 
 //a few useful constants
 const int     MaxInt    = (std::numeric_limits<int>::max)();
@@ -80,15 +81,27 @@ T Maximum(const T& v1, const T& v2)
 //  some random number functions.
 //----------------------------------------------------------------------------
 
+// Thread-safe random number generator
+inline unsigned thRand() {
+	thread_local std::mt19937* gen = nullptr;
+	if (!gen) {
+		std::random_device rd;
+		std::seed_seq seed{ rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd() };
+		gen = new std::mt19937(seed);
+	}
+	std::uniform_int_distribution<unsigned> uint_dist;
+	return uint_dist(*gen);
+}
+
 //returns a random integer between x and y
 inline int   RandInt(int x,int y)
 {
   assert(y>=x && "<RandInt>: y is less than x");
-  return rand()%(y-x+1)+x;
+  return thRand()%(y-x+1)+x;
 }
 
 //returns a random double between zero and 1
-inline double RandFloat()      {return ((rand())/(RAND_MAX+1.0));}
+inline double RandFloat()      {return ((thRand())/(THRAND_MAX+1.0));}
 
 inline double RandInRange(double x, double y)
 {
