@@ -13,6 +13,8 @@
 #include <conio.h>
 #include <iostream>
 #include <mutex>
+#include <condition_variable>
+#include <atomic>
 #include <queue>
 #include <string>
 
@@ -27,15 +29,21 @@ typedef struct {
 class ConsoleQueue {
 	private:
 		std::mutex m;
+		std::condition_variable c;
+		std::atomic<bool> quit;
 		std::queue<coloredText> q;
 	public:
-		ConsoleQueue() : m(), q() {}
+
+		ConsoleQueue() : m(), c(), quit(false), q() {}
 		~ConsoleQueue() {}
 
 		static ConsoleQueue* Instance();
 
 		void send(std::string, WORD);
-		void printAll();
+		std::string getLine();
+		void print();
+		void printLoop();
+		void termLoop();
 
 };
 

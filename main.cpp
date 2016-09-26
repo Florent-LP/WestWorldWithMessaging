@@ -47,6 +47,8 @@ int main()
   EntityMgr->RegisterEntity(Elsa);
   EntityMgr->RegisterEntity(John);
 
+  std::thread coutTd(&ConsoleQueue::printLoop, coutQueue);
+
   //run Bob, Elsa and John through a few Update calls
   std::string input = "Y";
   for (int i = 0; input == "Y" || input == "y"; i++)
@@ -61,17 +63,16 @@ int main()
 
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
-
-	coutQueue->printAll();
 	
 	if (i > 0 && i%30 == 0) {
-		SetTextColor(FOREGROUND_BLUE| FOREGROUND_RED | FOREGROUND_GREEN);
-		std::cout << "\nContinue story ? <y/N>" << std::endl;
-		std::getline(std::cin, input);
+		coutQueue->send("\nContinue story ? <y/N>\n", FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+		input = coutQueue->getLine();
+		//input = "N";
 	}
-
-    Sleep(800);
   }
+
+  coutQueue->termLoop();
+  coutTd.join();
 
   //tidy up
   delete Bob;
