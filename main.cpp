@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <windows.h>
+#include <SFML/Graphics.hpp>
 
 #include "Locations.h"
 #include "Miner.h"
@@ -14,6 +15,8 @@
 #include "EntityNames.h"
 
 std::ofstream os;
+
+int guiManager();
 
 int main()
 {
@@ -40,6 +43,9 @@ int main()
 
   // create the console queue thread
   std::thread coutTd(&ConsoleQueue::printLoop, coutQueue, 200);
+
+  // create the GUI thread
+  std::thread guiTd(&guiManager);
 
   // lambda function "condition(input)" : if input is "Y" or "y", returns true
   std::string input = "Y";
@@ -86,6 +92,30 @@ int main()
   //wait for a keypress before exiting
   PressAnyKeyToContinue();
 
+  //end the GUI thread
+  guiTd.join();
 
   return 0;
+}
+
+int guiManager() {
+	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
+	sf::CircleShape shape(100.f);
+	shape.setFillColor(sf::Color::Green);
+
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		window.clear();
+		window.draw(shape);
+		window.display();
+	}
+
+	return 0;
 }
