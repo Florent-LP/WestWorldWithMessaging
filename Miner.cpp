@@ -8,8 +8,6 @@ bool Miner::HandleMessage(const Telegram& msg)
 
 void Miner::Update()
 {
-  m_iThirst += 1;
-  
   m_pStateMachine->Update();
 }
 

@@ -6,7 +6,7 @@
 //
 //  Desc:   A class defining a drunkard.
 //
-//  Author: Florent Le Prince 2016 (florent.le-prince1@uqac.ca)
+//  Authors: Florent Le Prince 2016 (florent.le-prince1@uqac.ca), Maxime Legrand
 //
 //------------------------------------------------------------------------
 

@@ -7,6 +7,7 @@
 //  Desc:   Just a few handy utilities for dealing with consoles
 //
 //  Author: Mat Buckland (fup@ai-junkie.com)
+//  Modified: Florent Le Prince (florent.le-prince1@uqac.fr), Maxime Legrand
 //
 //------------------------------------------------------------------------
 #include <windows.h>
@@ -18,7 +19,10 @@
 #include <queue>
 #include <string>
 
-
+// This class enables thread concurrency over cout.
+// Each thread enqueues its output when the queue is free.
+// The class can print continuously the contents of the queue
+// when the printLoop is launched in a separate thread.
 #define coutQueue ConsoleQueue::Instance()
 
 typedef struct {
@@ -28,23 +32,35 @@ typedef struct {
 
 class ConsoleQueue {
 	private:
-		std::mutex m;
-		std::condition_variable c;
-		std::atomic<bool> quit;
-		std::queue<coloredText> q;
+		std::mutex m; // mutex for the queue
+		std::condition_variable c; // used to block printLoop
+		std::atomic<bool> quit; // used to break printLoop
+		std::queue<coloredText> q; // std::cout queue
 	public:
 
 		ConsoleQueue() : m(), c(), quit(false), q() {}
 		~ConsoleQueue() {}
 
+		// singleton
 		static ConsoleQueue* Instance();
 
-		void send(std::string, WORD);
-		std::string getLine();
-		void print();
-		void printLoop(int period);
-		void termLoop();
+		// replaces std::cout
+		void send(std::string text, WORD color = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
 
+		// replaces std::cin
+		std::string getLine();
+
+		// dequeues a coloredText and prints it
+		void print();
+
+		// loops print() (use in a separate thread)
+		void printLoop(int period = 200);
+
+		// breaks the printLoop (must be called before joining its thread)
+		void breakLoop();
+
+		// ensures that the queue has been empty for a while (inactive)
+		void waitIdle(int maxChecks = 10, int period = 40);
 };
 
 //default text colors can be found in wincon.h
@@ -66,8 +82,5 @@ inline void PressAnyKeyToContinue()
 
   return;
 }
-
-//void printQueuedText();
-
 
 #endif

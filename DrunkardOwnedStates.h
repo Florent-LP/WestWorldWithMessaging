@@ -6,7 +6,7 @@
 //
 //  Desc:   All the states that can be assigned to the Drunkard class.
 //
-//  Author: Florent Le Prince 2016 (florent.le-prince1@uqac.ca)
+//  Authors: Florent Le Prince 2016 (florent.le-prince1@uqac.ca), Maxime Legrand
 //
 //------------------------------------------------------------------------
 

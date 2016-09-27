@@ -5,7 +5,8 @@ ConsoleQueue* ConsoleQueue::Instance() {
 	return &instance;
 }
 
-void ConsoleQueue::send(std::string text, WORD color = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN) {
+void ConsoleQueue::send(std::string text, WORD color) {
+	// lock access (from other threads) until end of call
 	std::lock_guard<std::mutex> lock(m);
 
 	coloredText consoleData;
@@ -13,11 +14,13 @@ void ConsoleQueue::send(std::string text, WORD color = FOREGROUND_BLUE | FOREGRO
 	consoleData.color = color;
 	q.push(consoleData);
 
+	// resume print()
 	c.notify_one();
 }
 
 std::string ConsoleQueue::getLine() {
-	while (!q.empty());
+	waitIdle();
+	// lock access until end of call
 	std::lock_guard<std::mutex> lock(m);
 
 	std::string input;
@@ -26,16 +29,20 @@ std::string ConsoleQueue::getLine() {
 }
 
 void ConsoleQueue::print() {
+	// lock access
 	std::unique_lock<std::mutex> lock(m);
 
-	while (q.empty())
+	// wait until text is pushed in queue
+	while (q.empty() && !quit)
 		c.wait(lock);
 
-	coloredText consoleData = q.front();
-	SetTextColor(consoleData.color);
-	std::cout << consoleData.text;
+	if (!q.empty()) { // in case quit == true
+		coloredText consoleData = q.front();
+		SetTextColor(consoleData.color);
+		std::cout << consoleData.text;
 
-	q.pop();
+		q.pop();
+	}
 }
 
 void ConsoleQueue::printLoop(int period) {
@@ -45,15 +52,19 @@ void ConsoleQueue::printLoop(int period) {
 	}
 }
 
-void ConsoleQueue::termLoop() {
-	/*bool empty = false;
-	while (!empty) {
-		m.lock();
-		empty = q.empty();
-		m.unlock();
-	}*/
-
-	while (!q.empty());
-
+void ConsoleQueue::breakLoop() {
+	waitIdle();
 	quit = true;
+}
+
+void ConsoleQueue::waitIdle(int maxChecks, int period) {
+	for (int checks = 0; checks < maxChecks; ) {
+		if (q.empty()) checks++;
+		else checks = 0;
+		Sleep(period);
+	}
+
+	// if queue is empty, print() is blocked by c.lock()
+	std::lock_guard<std::mutex> lock(m); // lock access until end of call
+	c.notify_one(); // unblock print()
 }

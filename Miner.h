@@ -72,7 +72,7 @@ public:
     
     m_pStateMachine->SetCurrentState(GoHomeAndSleepTilRested::Instance());
 
-    /* NOTE, A GLOBAL STATE HAS NOT BEEN IMPLEMENTED FOR THE MINER */
+	m_pStateMachine->SetGlobalState(MinerGlobalState::Instance());
   }
 
   ~Miner(){delete m_pStateMachine;}
@@ -109,7 +109,9 @@ public:
   void          AddToWealth(int val);
 
   bool          Thirsty()const; 
-  void          BuyAndDrinkAWhiskey(){m_iThirst = 0; m_iMoneyInBank-=2;}
+  int			getThirst() const {return m_iThirst;}
+  void			IncreaseThirst() {m_iThirst += 1;}
+  void          BuyAndDrinkAWhiskey(){m_iThirst -= 1; m_iMoneyInBank-=1;}
 
   bool Fighting() const {
 	  return m_bFighting;

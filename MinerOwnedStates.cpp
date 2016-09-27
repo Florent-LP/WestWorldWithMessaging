@@ -19,6 +19,18 @@ extern std::ofstream os;
 #define cout os
 #endif
 
+//-----------------------------------------------------------------------Global state
+
+MinerGlobalState* MinerGlobalState::Instance() {
+	static MinerGlobalState instance;
+	return &instance;
+}
+
+
+void MinerGlobalState::Execute(Miner* pMiner) {
+	if (!pMiner->GetFSM()->isInState(*QuenchThirst::Instance()))
+		pMiner->IncreaseThirst();
+}
 
 //------------------------------------------------------------------------methods for EnterMineAndDigForNugget
 EnterMineAndDigForNugget* EnterMineAndDigForNugget::Instance()
@@ -238,7 +250,8 @@ void QuenchThirst::Execute(Miner* pMiner)
 
   pMiner->Say("\n" + GetNameOfEntity(pMiner->ID()) + ": That's mighty fine sippin' liquer");
 
-  pMiner->GetFSM()->ChangeState(EnterMineAndDigForNugget::Instance());  
+  if (pMiner->getThirst() == 0)
+	pMiner->GetFSM()->ChangeState(EnterMineAndDigForNugget::Instance());  
 }
 
 

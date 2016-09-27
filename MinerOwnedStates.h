@@ -21,6 +21,35 @@ struct Telegram;
 
 //------------------------------------------------------------------------
 //
+//  Moved Miner::IncreaseThirst from Miner::Update to
+//  MinerGlobalState::Execute so that he can stay longer in the saloon.
+//------------------------------------------------------------------------
+class MinerGlobalState : public State<Miner>
+{
+private:
+
+	MinerGlobalState() {}
+
+	//copy ctor and assignment should be private
+	MinerGlobalState(const MinerGlobalState&);
+	MinerGlobalState& operator=(const MinerGlobalState&);
+
+public:
+
+	//this is a singleton
+	static MinerGlobalState* Instance();
+
+	virtual void Enter(Miner* pMiner) {}
+
+	virtual void Execute(Miner* pMiner);
+
+	virtual void Exit(Miner* pMiner) {}
+
+	virtual bool OnMessage(Miner* pMiner, const Telegram& msg) { return false; }
+};
+
+//------------------------------------------------------------------------
+//
 //  In this state the miner will walk to a goldmine and pick up a nugget
 //  of gold. If the miner already has a nugget of gold he'll change state
 //  to VisitBankAndDepositGold. If he gets thirsty he'll change state

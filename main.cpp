@@ -28,13 +28,9 @@ int main()
   os.open("output.txt");
 #endif
 
-  //create a miner
+  //create entities
   Miner* Bob = new Miner(ent_Miner_Bob);
-
-  //create his wife
   MinersWife* Elsa = new MinersWife(ent_Elsa);
-
-  //create a drunkard
   Drunkard* John = new Drunkard(ent_Drunkard_John);
 
   //register them with the entity manager
@@ -45,9 +41,15 @@ int main()
   // create the console queue thread
   std::thread coutTd(&ConsoleQueue::printLoop, coutQueue, 200);
 
-  //run Bob, Elsa and John through a few Update calls
+  // lambda function "condition(input)" : if input is "Y" or "y", returns true
   std::string input = "Y";
-  for (int i = 0; input == "Y" || input == "y"; i++)
+  std::function<bool(std::string)> condition;
+  condition = [](std::string input) {
+	  return (input == "Y" || input == "y");
+  };
+
+  //run Bob, Elsa and John through a few Update calls
+  for (int i = 0; condition(input); i++)
   { 
 	// entities threads
     std::thread minerTd(&Miner::Update, Bob);
@@ -59,17 +61,21 @@ int main()
 	drunkTd.join();
 
     //dispatch any delayed messages
+	coutQueue->waitIdle();
     Dispatch->DispatchDelayedMessages();
 	
 	// do 30 more iterations?
 	if (i > 0 && i%30 == 0) {
-		coutQueue->send("\nContinue story ? <y/N>\n", FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+		coutQueue->send("\nContinue story ? <y/N>\n",
+						FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
 		input = coutQueue->getLine();
+		coutQueue->send((condition(input) ? "Starting 30 more iterations." : "The end."),
+						FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
 	}
   }
 
   // end infinite printing loop before joining thread
-  coutQueue->termLoop();
+  coutQueue->breakLoop();
   coutTd.join();
 
   //tidy up
@@ -83,9 +89,3 @@ int main()
 
   return 0;
 }
-
-
-
-
-
-
