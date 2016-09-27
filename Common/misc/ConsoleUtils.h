@@ -42,7 +42,7 @@ class ConsoleQueue {
 		void send(std::string, WORD);
 		std::string getLine();
 		void print();
-		void printLoop();
+		void printLoop(int period);
 		void termLoop();
 
 };

@@ -2,6 +2,7 @@
 #include <time.h>
 #include <string>
 #include <thread>
+#include <windows.h>
 
 #include "Locations.h"
 #include "Miner.h"
@@ -12,21 +13,15 @@
 #include "misc/ConsoleUtils.h"
 #include "EntityNames.h"
 
-
 std::ofstream os;
-
-// Convenient resizing (Microsoft Windows only)
-#include <windows.h>
-void resizeConsole(void) {
-	HWND consoleWnd = GetConsoleWindow();
-	RECT r;
-	GetWindowRect(consoleWnd, &r);
-	MoveWindow(consoleWnd, r.left, r.top, 800, 1024, true);
-}
 
 int main()
 {
-	resizeConsole();
+  // Convenient console resizing (800x1024)
+  HWND consoleWnd = GetConsoleWindow();
+  RECT r;
+  GetWindowRect(consoleWnd, &r);
+  MoveWindow(consoleWnd, r.left, r.top, 800, 1024, true);
 
 //define this to send output to a text file (see locations.h)
 #ifdef TEXTOUTPUT
@@ -47,12 +42,14 @@ int main()
   EntityMgr->RegisterEntity(Elsa);
   EntityMgr->RegisterEntity(John);
 
-  std::thread coutTd(&ConsoleQueue::printLoop, coutQueue);
+  // create the console queue thread
+  std::thread coutTd(&ConsoleQueue::printLoop, coutQueue, 200);
 
   //run Bob, Elsa and John through a few Update calls
   std::string input = "Y";
   for (int i = 0; input == "Y" || input == "y"; i++)
   { 
+	// entities threads
     std::thread minerTd(&Miner::Update, Bob);
     std::thread wifeTd(&MinersWife::Update, Elsa);
 	std::thread drunkTd(&Drunkard::Update, John);
@@ -64,13 +61,14 @@ int main()
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
 	
+	// do 30 more iterations?
 	if (i > 0 && i%30 == 0) {
 		coutQueue->send("\nContinue story ? <y/N>\n", FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
 		input = coutQueue->getLine();
-		//input = "N";
 	}
   }
 
+  // end infinite printing loop before joining thread
   coutQueue->termLoop();
   coutTd.join();
 

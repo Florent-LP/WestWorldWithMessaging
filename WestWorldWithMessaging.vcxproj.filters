@@ -52,7 +52,7 @@
       <Filter>misc</Filter>
     </ClCompile>
     <ClCompile Include="Common\misc\ConsoleUtils.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>misc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

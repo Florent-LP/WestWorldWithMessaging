@@ -38,10 +38,10 @@ void ConsoleQueue::print() {
 	q.pop();
 }
 
-void ConsoleQueue::printLoop() {
+void ConsoleQueue::printLoop(int period) {
 	while (!quit) {
 		print();
-		Sleep(200);
+		Sleep(period);
 	}
 }
 
