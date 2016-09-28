@@ -8,6 +8,7 @@
 //          Instantiated as a singleton.
 //
 //  Author: Mat Buckland 2002 (fup@ai-junkie.com)
+//  Modified: Florent Le Prince (florent.le-prince1@uqac.ca), Maxime Legrand
 //
 //------------------------------------------------------------------------
 #pragma warning (disable:4786)
@@ -31,7 +32,9 @@ const int   NO_ADDITIONAL_INFO   = 0;
 
 class MessageDispatcher
 {
-private:  
+private:
+  std::set<Telegram>* copiesContainer = nullptr;
+  std::mutex* copiesMtx = nullptr;
   
   //a std::set is used as the container for the delayed messages
   //because of the benefit of automatic sorting and avoidance
@@ -64,6 +67,11 @@ public:
   //send out any delayed messages. This method is called each time through   
   //the main game loop.
   void DispatchDelayedMessages();
+
+  void copyMessagesIn(std::set<Telegram>* container, std::mutex* lock = nullptr) {
+	  copiesContainer = container;
+	  copiesMtx = lock;
+  }
 };
 
 

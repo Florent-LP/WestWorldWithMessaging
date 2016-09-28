@@ -60,7 +60,7 @@ class ConsoleQueue {
 		void breakLoop();
 
 		// ensures that the queue has been empty for a while (inactive)
-		void waitIdle(int maxChecks = 10, int period = 40);
+		void waitIdle(int maxChecks = 5, int period = 40);
 };
 
 //default text colors can be found in wincon.h

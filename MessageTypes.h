@@ -11,7 +11,7 @@ enum message_type
   Msg_Provoke,
   Msg_RivalSaysHi,
   Msg_RivalSaysBye,
-  Msg_AcceptFight,
+  Msg_AcceptFight
 };
 
 

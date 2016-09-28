@@ -41,6 +41,10 @@ void MessageDispatcher::Discharge(BaseGameEntity* pReceiver,
     //telegram could not be handled
     coutQueue->send("Message not handled",
 		BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+  } else if (copiesContainer) {
+	  if (copiesMtx) copiesMtx->lock();
+	  copiesContainer->insert(telegram);
+	  if (copiesMtx) copiesMtx->unlock();
   }
 }
 
