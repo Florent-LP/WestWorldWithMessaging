@@ -156,11 +156,11 @@ void GetInFight::Enter(Drunkard* drunkard) {
 }
 
 void GetInFight::Execute(Drunkard* drunkard) {
-	drunkard->Say("\n" + GetNameOfEntity(drunkard->ID()) + ": POW! (" + std::to_string(drunkard->getFatigue()) + ")");
+	drunkard->Say("\n" + GetNameOfEntity(drunkard->ID()) + ": POW!");
 
 	drunkard->IncreaseFatigue();
 	if (drunkard->Fatigued()) {
-		drunkard->Say("\n" + GetNameOfEntity(drunkard->ID()) + ": Dammit, I'm done! You win this time! (" + std::to_string(drunkard->getFatigue()) + ")");
+		drunkard->Say("\n" + GetNameOfEntity(drunkard->ID()) + ": Dammit, I'm done! You win this time!");
 		drunkard->GetFSM()->ChangeState(SleepTilRested::Instance());
 
 		Dispatch->DispatchMessage(

@@ -2,10 +2,11 @@
 #include <time.h>
 #include <string>
 #include <thread>
+#include <mutex>
+#include <atomic>
 #include <windows.h>
 #include <SFML/Graphics.hpp>
 #include <map>
-#include <mutex>
 #include <set>
 
 #include "Locations.h"
@@ -20,18 +21,17 @@
 
 std::ofstream os;
 
-int guiManager();
 std::mutex guiMtx;
 std::atomic<bool> exitGui = false;
+
 struct {
 	location_type minerLoc = goldmine;
 	State<Miner>* minerSt = nullptr;
 	State<MinersWife>* wifeSt = nullptr;
 	State<Drunkard>* drunkardSt = nullptr;
-	int minerMsg = -1;
-	int wifeMsg = -1;
-	int drunkardMsg = -1;
 } guiData;
+
+int guiManager();
 
 int main()
 {
@@ -62,15 +62,9 @@ int main()
   // create the GUI thread
   std::thread guiTd(&guiManager);
 
-  // lambda function "condition(input)" : if input is "Y" or "y", returns true
-  std::string input = "Y";
-  std::function<bool(std::string)> condition;
-  condition = [](std::string input) {
-	  return (input == "Y" || input == "y");
-  };
-
   //run Bob, Elsa and John through a few Update calls
-  for (int i = 0; condition(input); i++)
+  std::string input = "Y";
+  for (int i = 0; (input == "Y" || input == "y"); i++)
   { 
 	// entities threads
     std::thread minerTd(&Miner::Update, Bob);
@@ -88,11 +82,9 @@ int main()
 	//send pertinent data to GUI
 	guiMtx.lock();
 	guiData.minerLoc = Bob->Location();
-
 	guiData.minerSt = Bob->GetFSM()->CurrentState();
 	guiData.wifeSt = Elsa->GetFSM()->CurrentState();
 	guiData.drunkardSt = John->GetFSM()->CurrentState();
-
 	guiMtx.unlock();
 	
 	// do 30 more iterations?
@@ -102,7 +94,7 @@ int main()
 		
 		input = coutQueue->getLine();
 
-		coutQueue->send((condition(input) ? "Starting 30 more iterations." : "The end."),
+		coutQueue->send((input == "Y" || input == "y") ? "Starting 30 more iterations." : "The end.",
 			FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
 	}
 
@@ -129,11 +121,11 @@ int main()
 }
 
 
-/* ------------------------ */
-/* Graphical User Interface */
-/* ------------------------ */
-// The GUI's code has noticeably been written in a great hurry,
-// please forgive its lack of readability and reusability. 
+/* -------------------------------------------- */
+/* --------- Graphical User Interface --------- */
+/* -------------------------------------------- */
+// Notice : The GUI has been written in a great hurry,
+// thus it lacks readability and reusability. 
 
 int guiManager() {
 	// Watch dispatched messages
@@ -143,12 +135,19 @@ int guiManager() {
 
 	// Window
 	const int wWidth = 900, wHeight = 600;
+
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
-	sf::RenderWindow window(sf::VideoMode(wWidth, wHeight), "West World With Messaging", sf::Style::Titlebar | sf::Style::Close, settings);
+
+	sf::RenderWindow window(
+		sf::VideoMode(wWidth, wHeight), 
+		"West World With Messaging", 
+		sf::Style::Titlebar | sf::Style::Close, 
+		settings);
+
 	window.setFramerateLimit(30);
 
-	// Some positions
+	// Some positions (in order to move cursors and miner)
 	std::map<location_type, sf::Vector2f> minerPos = {
 		{ goldmine, sf::Vector2f(170.f, 130.f) },
 		{ saloon, sf::Vector2f(420.f, 240.f) },
@@ -176,33 +175,48 @@ int guiManager() {
 		{ "class GetInFight", sf::Vector2f(828.f, 494.f) }
 	};
 
-	// Text
-	sf::Font font; font.loadFromFile("Resources/BouWeste.ttf");
+	// Texts
+	sf::Font font;
+	font.loadFromFile("Resources/BouWeste.ttf");
 
-	sf::Text mousePosTxt; mousePosTxt.setFont(font);
-	mousePosTxt.setCharacterSize(12); mousePosTxt.setFillColor(sf::Color::Black);
+	sf::Text mousePosTxt;
+	mousePosTxt.setFont(font);
+	mousePosTxt.setCharacterSize(12); 
+	mousePosTxt.setFillColor(sf::Color::Black);
 	mousePosTxt.setString("Mouse | x: 0 | y: 0");
 
-	sf::Text minerFsmTxt; minerFsmTxt.setFont(font);
-	minerFsmTxt.setCharacterSize(12); minerFsmTxt.setFillColor(sf::Color::Black);
+	sf::Text minerFsmTxt;
+	minerFsmTxt.setFont(font);
+	minerFsmTxt.setCharacterSize(12); 
+	minerFsmTxt.setFillColor(sf::Color::Black);
 	minerFsmTxt.setString("Miner  FSM");
 
-	sf::Text wifeFsmTxt; wifeFsmTxt.setFont(font);
-	wifeFsmTxt.setCharacterSize(12); wifeFsmTxt.setFillColor(sf::Color::Black);
+	sf::Text wifeFsmTxt; 
+	wifeFsmTxt.setFont(font);
+	wifeFsmTxt.setCharacterSize(12); 
+	wifeFsmTxt.setFillColor(sf::Color::Black);
 	wifeFsmTxt.setString("Wife  FSM");
 
-	sf::Text drunkardFsmTxt; drunkardFsmTxt.setFont(font);
-	drunkardFsmTxt.setCharacterSize(12); drunkardFsmTxt.setFillColor(sf::Color::Black);
+	sf::Text drunkardFsmTxt; 
+	drunkardFsmTxt.setFont(font);
+	drunkardFsmTxt.setCharacterSize(12); 
+	drunkardFsmTxt.setFillColor(sf::Color::Black);
 	drunkardFsmTxt.setString("Drunkard  FSM");
 
-	sf::Text minerMsgTxt; minerMsgTxt.setFont(font);
-	minerMsgTxt.setCharacterSize(10); minerMsgTxt.setFillColor(sf::Color::Black);
+	sf::Text minerMsgTxt; 
+	minerMsgTxt.setFont(font);
+	minerMsgTxt.setCharacterSize(10); 
+	minerMsgTxt.setFillColor(sf::Color::Black);
 
-	sf::Text wifeMsgTxt; wifeMsgTxt.setFont(font);
-	wifeMsgTxt.setCharacterSize(10); wifeMsgTxt.setFillColor(sf::Color::Black);
+	sf::Text wifeMsgTxt; 
+	wifeMsgTxt.setFont(font);
+	wifeMsgTxt.setCharacterSize(10);
+	wifeMsgTxt.setFillColor(sf::Color::Black);
 
-	sf::Text drunkardMsgTxt; drunkardMsgTxt.setFont(font);
-	drunkardMsgTxt.setCharacterSize(10); drunkardMsgTxt.setFillColor(sf::Color::Black);
+	sf::Text drunkardMsgTxt; 
+	drunkardMsgTxt.setFont(font);
+	drunkardMsgTxt.setCharacterSize(10); 
+	drunkardMsgTxt.setFillColor(sf::Color::Black);
 	
 
 	// Cursors
@@ -230,7 +244,8 @@ int guiManager() {
 	sf::Texture tDrunkardFsm; tDrunkardFsm.loadFromFile("Resources/drunkard_fsm.png"); tDrunkardFsm.setSmooth(true);
 
 	sf::Texture tCharac;      tCharac.loadFromFile("Resources/characters.png");
-	sf::Texture tMine;        tMine.loadFromFile("Resources/gold_mine.png", sf::IntRect(250, 40, 230, 200)); tMine.setSmooth(true);
+	sf::Texture tMine;        tMine.loadFromFile("Resources/gold_mine.png",
+							      sf::IntRect(250, 40, 230, 200));                     tMine.setSmooth(true);
 	sf::Texture tSaloon;      tSaloon.loadFromFile("Resources/saloon.png");            tSaloon.setSmooth(true);
 	sf::Texture tHouse;       tHouse.loadFromFile("Resources/house.png");              tHouse.setSmooth(true);
 	sf::Texture tBank;        tBank.loadFromFile("Resources/bank.png");                tBank.setSmooth(true);
@@ -238,22 +253,21 @@ int guiManager() {
 	
 	// Sprites
 	const float fsmScale = 0.8f;
+
 	sf::Sprite minerFsm;    minerFsm.setTexture(tMinerFsm);       minerFsm.setScale(fsmScale, fsmScale);
 	sf::Sprite wifeFsm;     wifeFsm.setTexture(tWifeFsm);         wifeFsm.setScale(fsmScale, fsmScale);
 	sf::Sprite drunkardFsm; drunkardFsm.setTexture(tDrunkardFsm); drunkardFsm.setScale(fsmScale, fsmScale);
 
-	sf::Sprite mine; mine.setTexture(tMine);       mine.setScale(0.5f, 0.5f);
-	sf::Sprite saloon; saloon.setTexture(tSaloon); saloon.setScale(0.5f, 0.5f);
-	sf::Sprite house; house.setTexture(tHouse);    house.setScale(0.25f, 0.25f);
-	sf::Sprite bank; bank.setTexture(tBank);       bank.setScale(0.4f, 0.4f);
+	sf::Sprite mine;        mine.setTexture(tMine);               mine.setScale(0.5f, 0.5f);
+	sf::Sprite saloon;      saloon.setTexture(tSaloon);           saloon.setScale(0.5f, 0.5f);
+	sf::Sprite house;       house.setTexture(tHouse);             house.setScale(0.25f, 0.25f);
+	sf::Sprite bank;        bank.setTexture(tBank);               bank.setScale(0.4f, 0.4f);
 
-	sf::Sprite miner; miner.setTexture(tCharac);       miner.setTextureRect(sf::IntRect(292, 64, 23, 32));
-	sf::Sprite wife; wife.setTexture(tCharac);         wife.setTextureRect(sf::IntRect(357, 160, 23, 32));
-	sf::Sprite drunkard; drunkard.setTexture(tCharac); drunkard.setTextureRect(sf::IntRect(260, 32, 23, 32));
+	sf::Sprite miner;       miner.setTexture(tCharac);            miner.setTextureRect(sf::IntRect(292, 64, 23, 32));
+	sf::Sprite wife;        wife.setTexture(tCharac);             wife.setTextureRect(sf::IntRect(357, 160, 23, 32));
+	sf::Sprite drunkard;    drunkard.setTexture(tCharac);         drunkard.setTextureRect(sf::IntRect(260, 32, 23, 32));
 
 	// Positionning
-	sf::Vector2i mousePos(0, 0);
-
 	float minerFsm_w = minerFsm.getGlobalBounds().width;
 	float minerFsm_h = minerFsm.getGlobalBounds().height;
 	float wifeFsm_w = wifeFsm.getGlobalBounds().width;
@@ -279,6 +293,10 @@ int guiManager() {
 	wifeMsgTxt.setPosition(790, 172);
 	drunkardMsgTxt.setPosition(500, 272);
 
+	// Stores the position of the mouse
+	sf::Vector2i mousePos(0, 0);
+
+	// Used to erase the messages after a timeout
 	sf::Clock chronoMiner, chronoWife, chronoDrunkard;
 
 	// Display loop
@@ -299,18 +317,19 @@ int guiManager() {
 		mousePos = sf::Mouse::getPosition(window);
 		mousePosTxt.setString("Mouse | x: " + std::to_string(mousePos.x) + " | y: " + std::to_string(mousePos.y));
 
-		// Logic
+		// Get states of agents and miner's location
 		guiMtx.lock();
 
 		miner.setPosition(minerPos[guiData.minerLoc]);
 		minerMsgTxt.setPosition(miner.getPosition().x - minerMsgTxt.getLocalBounds().width, miner.getPosition().y + miner.getLocalBounds().height);
 
-		minerCursor.setPosition(minerFsmPos[typeid(*(guiData.minerSt)).name()]);
-		wifeCursor.setPosition(wifeFsmPos[typeid(*(guiData.wifeSt)).name()]);
-		drunkardCursor.setPosition(drunkardFsmPos[typeid(*(guiData.drunkardSt)).name()]);
+		minerCursor.setPosition(    minerFsmPos[    typeid( *(guiData.minerSt)    ).name() ]);
+		wifeCursor.setPosition(     wifeFsmPos[     typeid( *(guiData.wifeSt)     ).name() ]);
+		drunkardCursor.setPosition( drunkardFsmPos[ typeid( *(guiData.drunkardSt) ).name() ]);
 
 		guiMtx.unlock();
 
+		// Erase messages after 3 seconds
 		if (chronoMiner.getElapsedTime().asSeconds() >= 3) {
 			minerMsgTxt.setString("");
 			chronoMiner.restart();
@@ -324,6 +343,7 @@ int guiManager() {
 			chronoDrunkard.restart();
 		}
 
+		// Get dispatched messages
 		copiesLock.lock();
 		if (!msgCopies.empty())
 		{
@@ -333,6 +353,7 @@ int guiManager() {
 			//find the recipient
 			BaseGameEntity* pSender = EntityMgr->GetEntityFromID(telegram.Sender);
 
+			// Display msg near the proper sprite
 			switch (pSender->ID()) {
 				case ent_Miner_Bob:
 					minerMsgTxt.setString(MsgToStr(telegram.Msg));
@@ -353,7 +374,7 @@ int guiManager() {
 		}
 		copiesLock.unlock();
 
-		// Outputs
+		// Update display
 		window.clear(sf::Color::White);
 
 		window.draw(minerFsm);
@@ -377,7 +398,7 @@ int guiManager() {
 		window.draw(wife);
 		window.draw(drunkard);
 
-		//window.draw(mousePosTxt);
+		//window.draw(mousePosTxt); // For conception
 		window.draw(minerMsgTxt);
 		window.draw(wifeMsgTxt);
 		window.draw(drunkardMsgTxt);

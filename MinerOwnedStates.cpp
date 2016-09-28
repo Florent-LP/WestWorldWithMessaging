@@ -232,7 +232,7 @@ void QuenchThirst::Enter(Miner* pMiner)
   {    
     pMiner->ChangeLocation(saloon);
 
-	pMiner->Say("\n" + GetNameOfEntity(pMiner->ID()) + ": Boy, ah sure is thusty! Walking to the saloon (" + std::to_string(pMiner->getFatigue()) + ")");
+	pMiner->Say("\n" + GetNameOfEntity(pMiner->ID()) + ": Boy, ah sure is thusty! Walking to the saloon");
 	
 	Dispatch->DispatchMessage(
 		SEND_MSG_IMMEDIATELY,
@@ -341,7 +341,7 @@ void DefendHonor::Enter(Miner* pMiner) {
 }
 
 void DefendHonor::Execute(Miner* pMiner) {
-	pMiner->Say("\n" + GetNameOfEntity(pMiner->ID()) + ": POW! (" + std::to_string(pMiner->getFatigue()) + ")");
+	pMiner->Say("\n" + GetNameOfEntity(pMiner->ID()) + ": POW!");
 
 	pMiner->IncreaseFatigue();
 	if (pMiner->Fatigued()) {
