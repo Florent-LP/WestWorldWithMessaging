@@ -9,5 +9,7 @@ _UpgradeReport_Files/
 *.ncb
 *.suo
 *.opendb
+*.plg
+*.VC.db
 UpgradeLog.XML
 UpgradeLog.htm
